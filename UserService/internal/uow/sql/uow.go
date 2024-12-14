@@ -4,7 +4,7 @@ import (
 	"database/sql"
 
 	user "github.com/fla-t/go-ing/UserService/internal/domain/user"
-	sqlrepo "github.com/fla-t/go-ing/UserService/internal/repository/user/sql"
+	sqlrepo "github.com/fla-t/go-ing/UserService/internal/repository/sql/user"
 	"github.com/fla-t/go-ing/UserService/internal/uow"
 )
 
