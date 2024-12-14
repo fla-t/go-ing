@@ -4,7 +4,7 @@ import (
 	"flag"
 	"log"
 
-	"github.com/fla-t/go-ing/internal/app"
+	app "github.com/fla-t/go-ing/internal/app/user"
 )
 
 func main() {
