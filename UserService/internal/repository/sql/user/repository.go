@@ -43,3 +43,15 @@ func (r *Repository) Save(u *user.User) error {
 
 	return nil
 }
+
+// Delete deletes a user
+func (r *Repository) Delete(id string) error {
+	query := "delete from users where id = $1"
+	_, err := r.tx.Exec(query, id)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

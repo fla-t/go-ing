@@ -39,3 +39,16 @@ func (s *Service) CreateUser(u *user.User) error {
 func (s *Service) GetUserByID(id string) (*user.User, error) {
 	return s.uow.UserRepository().GetByID(id)
 }
+
+// DeleteUser deletes a user by its id
+func (s *Service) DeleteUser(id string) error {
+	if err := s.uow.Begin(); err != nil {
+		return err
+	}
+
+	if err := s.uow.UserRepository().Delete(id); err != nil {
+		s.uow.Rollback()
+	}
+
+	return s.uow.Commit()
+}

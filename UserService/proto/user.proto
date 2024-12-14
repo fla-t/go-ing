@@ -41,7 +41,6 @@ message DeleteUserResponse {
 }
 
 // gRPC service definition
-
 service UserService {
     rpc GetUser(GetUserRequest) returns (GetUserResponse) {}
     rpc CreateUser(CreateUserRequest) returns (CreateUserResponse) {}

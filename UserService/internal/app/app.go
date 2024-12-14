@@ -2,11 +2,17 @@ package app
 
 import (
 	"database/sql"
+	"log"
+	"net"
 
 	userAPI "github.com/fla-t/go-ing/UserService/internal/api/user"
+	userGRPC "github.com/fla-t/go-ing/UserService/internal/grpc/user"
 	"github.com/fla-t/go-ing/UserService/internal/services/user"
 	uowInmemory "github.com/fla-t/go-ing/UserService/internal/uow/inmemory"
 	uowSQL "github.com/fla-t/go-ing/UserService/internal/uow/sql"
+	"github.com/fla-t/go-ing/UserService/proto"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 
 	"github.com/gin-gonic/gin"
 )
@@ -38,6 +44,9 @@ func NewApp(useInMemory bool) *App {
 	router := gin.Default()
 	setupRoutes(router, userhandler)
 
+	// Start gRPC server
+	go startGRPCServer(service)
+
 	return &App{Router: router}
 }
 
@@ -60,5 +69,24 @@ func setupRoutes(router *gin.Engine, handler *userAPI.Handler) {
 	{
 		r.POST("/", handler.CreateUser)
 		r.GET("/:id", handler.GetUserByID)
+	}
+}
+
+// startGRPCServer starts the gRPC server
+func startGRPCServer(service *user.Service) {
+	lis, err := net.Listen("tcp", ":50051")
+
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+
+	grpcServer := grpc.NewServer()
+
+	proto.RegisterUserServiceServer(grpcServer, userGRPC.NewUserService(service))
+	reflection.Register(grpcServer)
+
+	log.Println("gRPC server started at :50051")
+	if err := grpcServer.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
 	}
 }

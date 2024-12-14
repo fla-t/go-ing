@@ -32,3 +32,9 @@ func (r *Repository) Save(u *user.User) error {
 	r.users[u.ID] = u
 	return nil
 }
+
+// Delete deletes a user
+func (r *Repository) Delete(id string) error {
+	delete(r.users, id)
+	return nil
+}
