@@ -48,6 +48,7 @@ func (s *Service) DeleteUser(id string) error {
 
 	if err := s.uow.UserRepository().Delete(id); err != nil {
 		s.uow.Rollback()
+		return err
 	}
 
 	return s.uow.Commit()
