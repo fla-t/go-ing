@@ -1,4 +1,4 @@
-package domain
+package user
 
 // User represents a user of the system.
 type User struct {

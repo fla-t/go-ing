@@ -1,4 +1,4 @@
-package domain
+package user
 
 // RepositoryInterface for the User entity.
 type RepositoryInterface interface {
