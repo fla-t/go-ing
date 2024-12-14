@@ -1,21 +1,25 @@
 package booking
 
-import "github.com/google/uuid"
+import (
+	"time"
+
+	"github.com/google/uuid"
+)
 
 // Booking is the aggregate root for rides in the system
 type Booking struct {
 	ID     string
-	userID string
+	UserID string
 	Ride   Ride
-	time   string
+	Time   time.Time // time of booking in UTC
 }
 
 // NewBooking creates a new booking
-func NewBooking(userID string, ride Ride, time string) *Booking {
+func NewBooking(userID string, ride Ride) *Booking {
 	return &Booking{
 		ID:     uuid.New().String(),
-		userID: userID,
+		UserID: userID,
 		Ride:   ride,
-		time:   time,
+		Time:   time.Now().UTC(),
 	}
 }
