@@ -3,7 +3,7 @@ package app
 import (
 	"database/sql"
 
-	userAPI "github.com/fla-t/go-ing/UserService/api/user"
+	userAPI "github.com/fla-t/go-ing/UserService/internal/api/user"
 	"github.com/fla-t/go-ing/UserService/internal/services/user"
 	uowInmemory "github.com/fla-t/go-ing/UserService/internal/uow/inmemory"
 	uowSQL "github.com/fla-t/go-ing/UserService/internal/uow/sql"
