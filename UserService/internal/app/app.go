@@ -74,19 +74,20 @@ func setupRoutes(router *gin.Engine, handler *userAPI.Handler) {
 
 // startGRPCServer starts the gRPC server
 func startGRPCServer(service *user.Service) {
-	lis, err := net.Listen("tcp", ":50051")
+	listen, err := net.Listen("tcp", ":50051")
 
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
 
 	grpcServer := grpc.NewServer()
+	grpcService := userGRPC.NewUserService(service)
 
-	proto.RegisterUserServiceServer(grpcServer, userGRPC.NewUserService(service))
+	proto.RegisterUserServiceServer(grpcServer, grpcService)
 	reflection.Register(grpcServer)
 
 	log.Println("gRPC server started at :50051")
-	if err := grpcServer.Serve(lis); err != nil {
+	if err := grpcServer.Serve(listen); err != nil {
 		log.Fatalf("failed to serve: %v", err)
 	}
 }
