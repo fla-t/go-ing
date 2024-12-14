@@ -3,16 +3,19 @@ package uow
 import (
 	"database/sql"
 
+	booking "github.com/fla-t/go-ing/internal/domain/booking"
 	user "github.com/fla-t/go-ing/internal/domain/user"
-	sqlrepo "github.com/fla-t/go-ing/internal/repository/sql/user"
+	bookingRepo "github.com/fla-t/go-ing/internal/repository/sql/booking"
+	userRepo "github.com/fla-t/go-ing/internal/repository/sql/user"
 	"github.com/fla-t/go-ing/internal/uow"
 )
 
 // DbUnitOfWork is a struct that holds all the repositories
 type DbUnitOfWork struct {
-	db       *sql.DB
-	tx       *sql.Tx
-	userRepo user.RepositoryInterface
+	db          *sql.DB
+	tx          *sql.Tx
+	userRepo    user.RepositoryInterface
+	bookingRepo booking.RepositoryInterface
 }
 
 // NewDbUnitOfWork starts a transaction
@@ -28,7 +31,8 @@ func (uow *DbUnitOfWork) Begin() error {
 	}
 
 	uow.tx = tx
-	uow.userRepo = sqlrepo.NewUserRepository(uow.tx)
+	uow.userRepo = userRepo.NewUserRepository(uow.tx)
+	uow.bookingRepo = bookingRepo.NewBookingRepository(uow.tx)
 
 	return nil
 }
@@ -46,4 +50,9 @@ func (uow *DbUnitOfWork) Rollback() error {
 // UserRepository returns the user repository
 func (uow *DbUnitOfWork) UserRepository() user.RepositoryInterface {
 	return uow.userRepo
+}
+
+// BookingRepository returns the user repository
+func (uow *DbUnitOfWork) BookingRepository() booking.RepositoryInterface {
+	return uow.bookingRepo
 }
