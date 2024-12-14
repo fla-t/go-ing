@@ -3,7 +3,6 @@ package user
 import (
 	"net/http"
 
-	domain "github.com/fla-t/go-ing/UserService/internal/domain/user"
 	"github.com/fla-t/go-ing/UserService/internal/services/user"
 
 	"github.com/gin-gonic/gin"
@@ -21,7 +20,7 @@ func NewUserHandler(service *user.Service) *Handler {
 
 // CreateUser handles POST /users
 func (h *Handler) CreateUser(c *gin.Context) {
-	var u domain.User
+	var u User
 
 	// Bind the request body to the user struct
 	if err := c.ShouldBindJSON(&u); err != nil {
@@ -29,8 +28,14 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
+	// Validate the user
+	if err := u.Validate(); err != nil {
+		c.JSON(400, gin.H{"error": err.Error()})
+		return
+	}
+
 	// Call the service to create the user
-	if err := h.service.CreateUser(&u); err != nil {
+	if err := h.service.CreateUser(u.ConvertToDomain()); err != nil {
 		c.JSON(500, gin.H{"error": "Internal Server Error"})
 		return
 	}
