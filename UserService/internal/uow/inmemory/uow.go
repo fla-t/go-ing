@@ -2,7 +2,7 @@ package uow
 
 import (
 	user "github.com/fla-t/go-ing/UserService/internal/domain/user"
-	"github.com/fla-t/go-ing/UserService/internal/repository/inmemory"
+	"github.com/fla-t/go-ing/UserService/internal/repository/user/inmemory"
 )
 
 // FakeUnitOfWork is a struct that holds all the repositories
