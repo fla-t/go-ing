@@ -1,4 +1,4 @@
-package uow
+package inmemory
 
 import (
 	booking "github.com/fla-t/go-ing/internal/domain/booking"

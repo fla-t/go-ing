@@ -20,22 +20,20 @@ func NewBookingRepository(tx *sql.Tx) *Repository {
 
 // CreateBooking creates a new booking
 func (r *Repository) CreateBooking(b *booking.Booking) error {
-	bookingQuery := `
-		insert into bookings (id, user_id, ride_id, time) 
-		values ($1, $2, $3, $4);
-	`
-	_, err := r.tx.Exec(bookingQuery, b.ID, b.UserID, b.Ride.ID, b.Time)
-
-	if err != nil {
-		return err
-	}
-
 	query := `
 		insert into rides (id, source, destination, distance, cost) 
 		values ($1, $2, $3, $4, $5);
 	`
-	_, err = r.tx.Exec(query, b.Ride.ID, b.Ride.Source, b.Ride.Destination, b.Ride.Distance, b.Ride.Cost)
+	_, err := r.tx.Exec(query, b.Ride.ID, b.Ride.Source, b.Ride.Destination, b.Ride.Distance, b.Ride.Cost)
+	if err != nil {
+		return err
+	}
 
+	bookingQuery := `
+		insert into bookings (id, user_id, ride_id, time) 
+		values ($1, $2, $3, $4);
+	`
+	_, err = r.tx.Exec(bookingQuery, b.ID, b.UserID, b.Ride.ID, b.Time)
 	if err != nil {
 		return err
 	}
@@ -51,10 +49,10 @@ func (r *Repository) GetBookingByID(bookingID string) (*booking.Booking, error) 
 	err := r.tx.QueryRow(`
 		select 
 			b.id, b.user_id, b.time, 
-			r.ride_id, r.source, r.destination, r.distance, r.cost
+			r.id, r.source, r.destination, r.distance, r.cost
 		from bookings b
-		join rides r on b.ride_id = r.ride_id
-		where b.booking_id = ?;
+		join rides r on b.ride_id = r.id
+		where b.id = $1;
 	`, bookingID).
 		Scan(&b.ID, &b.UserID, &b.Time, &ride.ID, &ride.Source, &ride.Destination, &ride.Distance, &ride.Cost)
 
@@ -71,7 +69,7 @@ func (r *Repository) UpdateRide(b *booking.Ride) error {
 	query := `
 		update rides
 		set source = $1, destination = $2, distance = $3, cost = $4
-		where ride_id = $5;
+		where id = $5;
 	`
 	_, err := r.tx.Exec(query, b.Source, b.Destination, b.Distance, b.Cost, b.ID)
 
