@@ -34,7 +34,14 @@ func (r *Repository) GetBookingByID(id string) (*booking.Booking, error) {
 }
 
 // UpdateRide updates a ride
-func (r *Repository) UpdateRide(b *booking.Ride) error {
-	r.bookings[b.ID].Ride = *b
-	return nil
+func (r *Repository) UpdateRide(ride *booking.Ride) error {
+	for _, b := range r.bookings {
+		if b.Ride.ID == ride.ID {
+			// Update the Ride object
+			b.Ride = *ride
+			return nil
+		}
+	}
+
+	return errors.New("Ride Not Found")
 }
