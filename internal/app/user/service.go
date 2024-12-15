@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	userGRPC "github.com/fla-t/go-ing/internal/grpc/user"
@@ -12,6 +13,7 @@ import (
 	uowInmemory "github.com/fla-t/go-ing/internal/uow/inmemory"
 	uowSQL "github.com/fla-t/go-ing/internal/uow/sql"
 	proto "github.com/fla-t/go-ing/proto/user"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -21,6 +23,9 @@ import (
 // StartGRPCApp initializes and starts the gRPC server on the specified port
 func StartGRPCApp(port int, useInMemory bool) {
 	var service *user.Service
+
+	// Setup Prometheus metrics
+	go setupPrometheusMetrics()
 
 	// Initialize Unit of Work (UoW) and Service
 	if useInMemory {
@@ -74,5 +79,20 @@ func startGRPCServer(service *user.Service, port int) {
 	log.Printf("gRPC server started at %s\n", address)
 	if err := grpcServer.Serve(listen); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
+	}
+}
+
+// setupPrometheusMetrics exposes the /metrics endpoint for Prometheus
+func setupPrometheusMetrics() {
+	http.Handle("/metrics", promhttp.Handler())
+
+	metricsPort := os.Getenv("METRICS_PORT")
+	if metricsPort == "" {
+		metricsPort = "9090" // Default metrics port
+	}
+
+	log.Printf("Prometheus metrics available at :%s/metrics", metricsPort)
+	if err := http.ListenAndServe(":"+metricsPort, nil); err != nil {
+		log.Fatalf("Failed to start Prometheus metrics server: %v", err)
 	}
 }

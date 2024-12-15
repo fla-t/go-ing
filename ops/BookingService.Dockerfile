@@ -23,4 +23,4 @@ RUN chmod +x booking-service
 
 EXPOSE 50052
 
-CMD ["./booking-service", "50052", "false", "userservice:50051"]
+CMD ["./booking-service"]

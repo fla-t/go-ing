@@ -45,10 +45,14 @@ services:
       dockerfile: ops/UserService.Dockerfile
     ports:
       - "50051:50051"
+      - "9090:9090"
     networks:
       - app-network
     environment:
+      - GRPC_PORT=50051
+      - USE_INMEMORY=false
       - DATABASE_URL=postgres://user:password@userservice-db:5432/userservice_db?sslmode=disable
+      - METRICS_PORT=9090
     depends_on:
       userservice-db:
         condition: service_healthy
@@ -61,11 +65,15 @@ services:
       dockerfile: ops/BookingService.Dockerfile
     ports:
       - "50052:50052"
+      - "9091:9091"
     networks:
       - app-network
     environment:
-      - DATABASE_URL=postgres://user:password@bookingservice-db:5432/bookingservice_db?sslmode=disable
+      - GRPC_PORT=50052
+      - USE_INMEMORY=false
       - USER_SERVICE_ADDRESS=userservice:50051
+      - DATABASE_URL=postgres://user:password@bookingservice-db:5432/bookingservice_db?sslmode=disable
+      - METRICS_PORT=9091
     depends_on:
       bookingservice-db:
         condition: service_healthy

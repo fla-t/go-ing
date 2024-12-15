@@ -23,4 +23,4 @@ RUN chmod +x user-service
 
 EXPOSE 50051
 
-CMD ["./user-service", "50051", "false"]
+CMD ["./user-service"]

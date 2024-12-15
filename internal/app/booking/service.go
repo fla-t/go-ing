@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"net/http"
 	"os"
 
 	acl "github.com/fla-t/go-ing/internal/acl/user/grpc"
@@ -13,6 +14,8 @@ import (
 	uowInmemory "github.com/fla-t/go-ing/internal/uow/inmemory"
 	uowSQL "github.com/fla-t/go-ing/internal/uow/sql"
 	proto "github.com/fla-t/go-ing/proto/booking"
+
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
 
@@ -23,9 +26,12 @@ import (
 func StartGRPCApp(port int, useInMemory bool, userServiceAddress string) {
 	var service *booking.Service
 
+	// Setup Prometheus metrics
+	go setupPrometheusMetrics()
+
 	// Setup gRPC connection for User Service ACL
 	userConn := setupUserGRPCConnection(userServiceAddress)
-	// defer userConn.Close()
+	defer userConn.Close()
 
 	userACL := acl.NewGRPCUserACL(userConn)
 
@@ -41,10 +47,24 @@ func StartGRPCApp(port int, useInMemory bool, userServiceAddress string) {
 
 	// Start the gRPC server
 	startGRPCServer(service, port)
-
 }
 
-// setupDatabase initializes the SQLite database
+// setupPrometheusMetrics exposes the /metrics endpoint for Prometheus
+func setupPrometheusMetrics() {
+	http.Handle("/metrics", promhttp.Handler())
+
+	metricsPort := os.Getenv("METRICS_PORT")
+	if metricsPort == "" {
+		metricsPort = "9090" // Default metrics port
+	}
+
+	log.Printf("Prometheus metrics available at :%s/metrics", metricsPort)
+	if err := http.ListenAndServe(":"+metricsPort, nil); err != nil {
+		log.Fatalf("Failed to start Prometheus metrics server: %v", err)
+	}
+}
+
+// setupDatabase initializes the PostgreSQL database
 func setupDatabase() *sql.DB {
 	dbURL := os.Getenv("DATABASE_URL")
 	if dbURL == "" {
@@ -56,14 +76,22 @@ func setupDatabase() *sql.DB {
 		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
-	// Create booking table if it doesn't exist
-	_, err = db.Exec("create table if not exists bookings (id uuid primary key, user_id uuid not null, ride_id uuid not null, time timestamptz not null);")
-	if err != nil {
-		panic(err)
-	}
-
-	// Create booking table if it doesn't exist
-	_, err = db.Exec("create table if not exists rides (id uuid primary key, source text not null, destination text not null, distance double precision not null, cost double precision not null);")
+	// Create tables if they don't exist
+	_, err = db.Exec(`
+		create table if not exists bookings (
+			id uuid primary key,
+			user_id uuid not null,
+			ride_id uuid not null,
+			time timestamptz not null
+		);
+		create table if not exists rides (
+			id uuid primary key,
+			source text not null,
+			destination text not null,
+			distance double precision not null,
+			cost double precision not null
+		);
+	`)
 	if err != nil {
 		panic(err)
 	}
