@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	acl "github.com/fla-t/go-ing/internal/acl/user/grpc"
 	bookingGRPC "github.com/fla-t/go-ing/internal/grpc/booking"
@@ -14,6 +15,8 @@ import (
 	proto "github.com/fla-t/go-ing/proto/booking"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	_ "github.com/lib/pq"
 )
 
 // StartGRPCApp initializes and starts the gRPC server on the specified port
@@ -31,18 +34,26 @@ func StartGRPCApp(port int, useInMemory bool, userServiceAddress string) {
 		service = booking.NewService(uowInmemory.NewFakeUnitOfWork(), userACL)
 	} else {
 		db := setupDatabase()
+		defer db.Close() // close the db connection
+
 		service = booking.NewService(uowSQL.NewDbUnitOfWork(db), userACL)
 	}
 
 	// Start the gRPC server
 	startGRPCServer(service, port)
+
 }
 
 // setupDatabase initializes the SQLite database
 func setupDatabase() *sql.DB {
-	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
 	// Create booking table if it doesn't exist

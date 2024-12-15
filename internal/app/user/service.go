@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"os"
 
 	userGRPC "github.com/fla-t/go-ing/internal/grpc/user"
 	"github.com/fla-t/go-ing/internal/services/user"
@@ -13,6 +14,8 @@ import (
 	proto "github.com/fla-t/go-ing/proto/user"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/reflection"
+
+	_ "github.com/lib/pq"
 )
 
 // StartGRPCApp initializes and starts the gRPC server on the specified port
@@ -33,9 +36,14 @@ func StartGRPCApp(port int, useInMemory bool) {
 
 // setupDatabase initializes the SQLite database
 func setupDatabase() *sql.DB {
-	db, err := sql.Open("sqlite3", "file::memory:?cache=shared")
+	dbURL := os.Getenv("DATABASE_URL")
+	if dbURL == "" {
+		log.Fatal("DATABASE_URL is not set")
+	}
+
+	db, err := sql.Open("postgres", dbURL)
 	if err != nil {
-		panic(err)
+		log.Fatalf("Failed to connect to the database: %v", err)
 	}
 
 	// Create users table if it doesn't exist
