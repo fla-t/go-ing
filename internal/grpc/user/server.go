@@ -1,11 +1,11 @@
-package grpc
+package user
 
 import (
 	"context"
 
 	domain "github.com/fla-t/go-ing/internal/domain/user"
 	"github.com/fla-t/go-ing/internal/services/user"
-	"github.com/fla-t/go-ing/proto"
+	proto "github.com/fla-t/go-ing/proto/user"
 )
 
 // Service is the gRPC server for the user service

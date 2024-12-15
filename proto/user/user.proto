@@ -2,7 +2,7 @@ syntax = "proto3";
 
 package user;
 
-option go_package = "UserService/proto;proto";
+option go_package = "proto/user;proto";
 
 // User message definition
 message User {
