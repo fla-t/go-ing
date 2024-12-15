@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 
+	acl "github.com/fla-t/go-ing/internal/acl/user/grpc"
 	bookingGRPC "github.com/fla-t/go-ing/internal/grpc/booking"
 	"github.com/fla-t/go-ing/internal/services/booking"
 	uowInmemory "github.com/fla-t/go-ing/internal/uow/inmemory"
@@ -18,13 +19,12 @@ import (
 // StartGRPCApp initializes and starts the gRPC server on the specified port
 func StartGRPCApp(port int, useInMemory bool) {
 	var service *booking.Service
-
 	// Initialize Unit of Work (UoW) and Service
 	if useInMemory {
-		service = booking.NewService(uowInmemory.NewFakeUnitOfWork())
+		service = booking.NewService(uowInmemory.NewFakeUnitOfWork(), acl.NewGRPCUserACL())
 	} else {
 		db := setupDatabase()
-		service = booking.NewService(uowSQL.NewDbUnitOfWork(db))
+		service = booking.NewService(uowSQL.NewDbUnitOfWork(db), acl.NewGRPCUserACL())
 	}
 
 	// Start the gRPC server
