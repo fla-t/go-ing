@@ -28,7 +28,13 @@ func (s *Service) CreateBooking(ctx context.Context, req *proto.CreateBookingReq
 		return nil, err
 	}
 
-	return &proto.CreateBookingResponse{UserId: b.UserID, RideId: b.Ride.ID, Time: timestamppb.New(b.Time)}, nil
+	return &proto.CreateBookingResponse{
+		Booking: &proto.Booking{
+			Id:     b.ID,
+			UserId: b.UserID,
+			RideId: b.Ride.ID,
+			Time:   timestamppb.New(b.Time),
+		}}, nil
 }
 
 // GetBooking returns a booking by its id
