@@ -17,14 +17,21 @@ import (
 )
 
 // StartGRPCApp initializes and starts the gRPC server on the specified port
-func StartGRPCApp(port int, useInMemory bool) {
+func StartGRPCApp(port int, useInMemory bool, userServiceAddress string) {
 	var service *booking.Service
+
+	// Setup gRPC connection for User Service ACL
+	userConn := setupUserGRPCConnection(userServiceAddress)
+	defer userConn.Close()
+
+	userACL := acl.NewGRPCUserACL(userConn)
+
 	// Initialize Unit of Work (UoW) and Service
 	if useInMemory {
-		service = booking.NewService(uowInmemory.NewFakeUnitOfWork(), acl.NewGRPCUserACL())
+		service = booking.NewService(uowInmemory.NewFakeUnitOfWork(), userACL)
 	} else {
 		db := setupDatabase()
-		service = booking.NewService(uowSQL.NewDbUnitOfWork(db), acl.NewGRPCUserACL())
+		service = booking.NewService(uowSQL.NewDbUnitOfWork(db), userACL)
 	}
 
 	// Start the gRPC server
@@ -73,4 +80,14 @@ func startGRPCServer(service *booking.Service, port int) {
 	if err := grpcServer.Serve(listen); err != nil {
 		log.Fatalf("Failed to serve gRPC: %v", err)
 	}
+}
+
+// setupUserGRPCConnection establishes a gRPC connection to the User Service
+func setupUserGRPCConnection(userServiceAddress string) *grpc.ClientConn {
+	conn, err := grpc.Dial(userServiceAddress, grpc.WithInsecure())
+	if err != nil {
+		log.Fatalf("Failed to connect to User Service at %s: %v", userServiceAddress, err)
+	}
+	log.Printf("Connected to User Service at %s\n", userServiceAddress)
+	return conn
 }
