@@ -10,9 +10,14 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5433:5432" # Expose PostgreSQL for debugging if needed
+      - "5433:5432"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d userservice_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # PostgreSQL for Booking Service
   bookingservice-db:
@@ -23,9 +28,14 @@ services:
       POSTGRES_USER: user
       POSTGRES_PASSWORD: password
     ports:
-      - "5434:5432" # Expose PostgreSQL for debugging if needed
+      - "5434:5432"
     networks:
       - app-network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d bookingservice_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # User Service
   userservice:
@@ -40,7 +50,8 @@ services:
     environment:
       - DATABASE_URL=postgres://user:password@userservice-db:5432/userservice_db?sslmode=disable
     depends_on:
-      - userservice-db
+      userservice-db:
+        condition: service_healthy
 
   # Booking Service
   bookingservice:
@@ -56,8 +67,10 @@ services:
       - DATABASE_URL=postgres://user:password@bookingservice-db:5432/bookingservice_db?sslmode=disable
       - USER_SERVICE_ADDRESS=userservice:50051
     depends_on:
-      - bookingservice-db
-      - userservice
+      bookingservice-db:
+        condition: service_healthy
+      userservice:
+        condition: service_started
 
 networks:
   app-network:

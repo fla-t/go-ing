@@ -34,7 +34,7 @@ message CreateBookingResponse {
 
 // GetBooking Request and Response
 message GetBookingRequest {
-    string booking_id = 1;
+    string id = 1;
 }
 
 message GetBookingResponse {

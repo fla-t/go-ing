@@ -25,7 +25,7 @@ func StartGRPCApp(port int, useInMemory bool, userServiceAddress string) {
 
 	// Setup gRPC connection for User Service ACL
 	userConn := setupUserGRPCConnection(userServiceAddress)
-	defer userConn.Close()
+	// defer userConn.Close()
 
 	userACL := acl.NewGRPCUserACL(userConn)
 
@@ -63,7 +63,7 @@ func setupDatabase() *sql.DB {
 	}
 
 	// Create booking table if it doesn't exist
-	_, err = db.Exec("create table if not exists rides (id uuid primary key, source text not null, destination text not null, distance double not null, cost double not null, time timestamptz not null);")
+	_, err = db.Exec("create table if not exists rides (id uuid primary key, source text not null, destination text not null, distance double precision not null, cost double precision not null);")
 	if err != nil {
 		panic(err)
 	}
@@ -95,7 +95,7 @@ func startGRPCServer(service *booking.Service, port int) {
 
 // setupUserGRPCConnection establishes a gRPC connection to the User Service
 func setupUserGRPCConnection(userServiceAddress string) *grpc.ClientConn {
-	conn, err := grpc.Dial(userServiceAddress, grpc.WithInsecure())
+	conn, err := grpc.Dial(userServiceAddress, grpc.WithInsecure(), grpc.WithIdleTimeout(0))
 	if err != nil {
 		log.Fatalf("Failed to connect to User Service at %s: %v", userServiceAddress, err)
 	}

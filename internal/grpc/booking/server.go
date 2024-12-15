@@ -39,7 +39,7 @@ func (s *Service) CreateBooking(ctx context.Context, req *proto.CreateBookingReq
 
 // GetBooking returns a booking by its id
 func (s *Service) GetBooking(ctx context.Context, req *proto.GetBookingRequest) (*proto.GetBookingResponse, error) {
-	b, err := s.service.GetBookingByID(req.GetBookingId())
+	b, err := s.service.GetBookingByID(req.GetId())
 
 	if err != nil {
 		return nil, err

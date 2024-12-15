@@ -52,7 +52,8 @@ func (r *Repository) GetBookingByID(bookingID string) (*booking.Booking, error) 
 			r.id, r.source, r.destination, r.distance, r.cost
 		from bookings b
 		join rides r on b.ride_id = r.id
-		where b.id = $1;
+		where b.id = $1
+		;
 	`, bookingID).
 		Scan(&b.ID, &b.UserID, &b.Time, &ride.ID, &ride.Source, &ride.Destination, &ride.Distance, &ride.Cost)
 

@@ -44,7 +44,22 @@ func (s *Service) CreateUser(name string, email string) (string, error) {
 
 // GetUserByID returns a user by its id
 func (s *Service) GetUserByID(id string) (*user.User, error) {
-	return s.uow.UserRepository().GetByID(id)
+	if err := s.uow.Begin(); err != nil {
+		return nil, err
+	}
+
+	user, err := s.uow.UserRepository().GetByID(id)
+	if err != nil {
+		s.uow.Rollback()
+		return nil, err
+	}
+
+	if err := s.uow.Commit(); err != nil {
+		s.uow.Rollback()
+		return nil, err
+	}
+
+	return user, nil
 }
 
 // DeleteUser deletes a user by its id

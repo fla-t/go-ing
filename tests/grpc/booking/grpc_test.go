@@ -89,7 +89,7 @@ func TestGetBooking(t *testing.T) {
 	assert.NotNil(t, createResp)
 
 	req := &proto.GetBookingRequest{
-		BookingId: createResp.Booking.Id,
+		Id: createResp.Booking.Id,
 	}
 
 	resp, err := client.GetBooking(ctx, req)

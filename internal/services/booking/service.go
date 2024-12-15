@@ -40,6 +40,10 @@ func (s *Service) CreateBooking(userID string, source string, destination string
 
 // GetBookingByID returns a booking by its id
 func (s *Service) GetBookingByID(id string) (*Booking, error) {
+	if err := s.uow.Begin(); err != nil {
+		return nil, err
+	}
+
 	b, err := s.uow.BookingRepository().GetBookingByID(id)
 	if err != nil {
 		return nil, err
@@ -47,6 +51,10 @@ func (s *Service) GetBookingByID(id string) (*Booking, error) {
 
 	user, err := s.userACL.GetUserByID(b.UserID)
 	if err != nil {
+		return nil, err
+	}
+
+	if err := s.uow.Commit(); err != nil {
 		return nil, err
 	}
 
