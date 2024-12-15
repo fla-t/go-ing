@@ -39,7 +39,7 @@ func setupDatabase() *sql.DB {
 	}
 
 	// Create users table if it doesn't exist
-	_, err = db.Exec("CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, name TEXT, email TEXT)")
+	_, err = db.Exec("create table if not exists users (id uuid primary key, name text, email text)")
 	if err != nil {
 		panic(err)
 	}
