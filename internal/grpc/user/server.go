@@ -3,7 +3,6 @@ package user
 import (
 	"context"
 
-	domain "github.com/fla-t/go-ing/internal/domain/user"
 	"github.com/fla-t/go-ing/internal/services/user"
 	proto "github.com/fla-t/go-ing/proto/user"
 )
@@ -37,13 +36,7 @@ func (s *Service) GetUser(ctx context.Context, req *proto.GetUserRequest) (*prot
 
 // CreateUser creates a new user
 func (s *Service) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
-	u := &domain.User{
-		ID:    req.GetId(),
-		Name:  req.GetName(),
-		Email: req.GetEmail(),
-	}
-
-	if err := s.service.CreateUser(u); err != nil {
+	if err := s.service.CreateUser(req.GetName(), req.GetEmail()); err != nil {
 		return nil, err
 	}
 

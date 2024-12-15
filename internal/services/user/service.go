@@ -18,10 +18,12 @@ func NewService(uow uow.UnitOfWorkInterface) *Service {
 }
 
 // CreateUser creates a new user
-func (s *Service) CreateUser(u *user.User) error {
-	if u.ID == "" || u.Name == "" || u.Email == "" {
+func (s *Service) CreateUser(name string, email string) error {
+	if name == "" || email == "" {
 		return errors.New("invalid user data")
 	}
+
+	u := user.NewUser(name, email)
 
 	if err := s.uow.Begin(); err != nil {
 		return err
