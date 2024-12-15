@@ -46,7 +46,7 @@ func (s *Service) GetBooking(ctx context.Context, req *proto.GetBookingRequest) 
 	}
 
 	return &proto.GetBookingResponse{
-		Name: b.UserID, // This should be user's name, inject acl here
+		Name: b.Name, // This should be user's name, inject acl here
 		Ride: &proto.Ride{
 			Source:      b.Ride.Source,
 			Destination: b.Ride.Destination,

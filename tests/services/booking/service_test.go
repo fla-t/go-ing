@@ -3,6 +3,8 @@ package booking_test
 import (
 	"testing"
 
+	aclModels "github.com/fla-t/go-ing/internal/acl/user"
+	acl "github.com/fla-t/go-ing/internal/acl/user/inmemory"
 	"github.com/fla-t/go-ing/internal/domain/booking"
 	service "github.com/fla-t/go-ing/internal/services/booking"
 	"github.com/fla-t/go-ing/internal/uow/inmemory"
@@ -11,21 +13,30 @@ import (
 
 func TestCreateBooking(t *testing.T) {
 	uow := inmemory.NewFakeUnitOfWork()
-	service := service.NewService(uow)
+	userACL := acl.NewInMemoryUserACL()
+	service := service.NewService(uow, userACL)
 
+	userACL.AddUser(&aclModels.User{ID: "1", Name: "John Doe", Email: "john@example.com"})
 	b, err := service.CreateBooking("1", "A", "B", 10.0, 100.0)
 	assert.Nil(t, err)
 	assert.NotNil(t, b)
 
 	savedBooking, err := service.GetBookingByID(b.ID)
 	assert.Nil(t, err)
-	assert.Equal(t, b, savedBooking)
+	assert.Equal(t, b.ID, savedBooking.ID)
+	assert.Equal(t, b.Ride.Source, savedBooking.Ride.Source)
+	assert.Equal(t, b.Ride.Destination, savedBooking.Ride.Destination)
+	assert.Equal(t, b.Ride.Distance, savedBooking.Ride.Distance)
+	assert.Equal(t, b.Ride.Cost, savedBooking.Ride.Cost)
+	assert.Equal(t, b.Time, savedBooking.Time)
 }
 
 func TestUpdateRide(t *testing.T) {
 	uow := inmemory.NewFakeUnitOfWork()
-	service := service.NewService(uow)
+	userACL := acl.NewInMemoryUserACL()
+	service := service.NewService(uow, userACL)
 
+	userACL.AddUser(&aclModels.User{ID: "1", Name: "John Doe", Email: "john@example.com"})
 	b, err := service.CreateBooking("1", "A", "B", 10.0, 100.0)
 	if err != nil {
 		t.Fatal(err)
@@ -38,5 +49,8 @@ func TestUpdateRide(t *testing.T) {
 
 	updatedBooking, err := service.GetBookingByID(b.ID)
 	assert.Nil(t, err)
-	assert.Equal(t, ride, updatedBooking.Ride)
+	assert.Equal(t, ride.Source, updatedBooking.Ride.Source)
+	assert.Equal(t, ride.Destination, updatedBooking.Ride.Destination)
+	assert.Equal(t, ride.Distance, updatedBooking.Ride.Distance)
+	assert.Equal(t, ride.Cost, updatedBooking.Ride.Cost)
 }

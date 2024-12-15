@@ -5,6 +5,8 @@ import (
 	"net"
 	"testing"
 
+	aclModels "github.com/fla-t/go-ing/internal/acl/user"
+	acl "github.com/fla-t/go-ing/internal/acl/user/inmemory"
 	bookingGRPC "github.com/fla-t/go-ing/internal/grpc/booking"
 	service "github.com/fla-t/go-ing/internal/services/booking"
 	uow "github.com/fla-t/go-ing/internal/uow/inmemory"
@@ -22,7 +24,10 @@ func init() {
 	lis = bufconn.Listen(bufSize)
 	s := grpc.NewServer()
 	uow := uow.NewFakeUnitOfWork()
-	service := service.NewService(uow)
+	userACL := acl.NewInMemoryUserACL()
+	service := service.NewService(uow, userACL)
+
+	userACL.AddUser(&aclModels.User{ID: "1", Name: "Test User", Email: "test@example.com"})
 	proto.RegisterBookingServiceServer(s, bookingGRPC.NewBookingService(service))
 	go func() {
 		if err := s.Serve(lis); err != nil {
