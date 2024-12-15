@@ -45,7 +45,6 @@ func TestCreateUser(t *testing.T) {
 	client := proto.NewUserServiceClient(conn)
 
 	req := &proto.CreateUserRequest{
-		Id:    "1",
 		Name:  "Test User",
 		Email: "testuser@example.com",
 	}
@@ -55,7 +54,7 @@ func TestCreateUser(t *testing.T) {
 		t.Fatalf("CreateUser failed: %v", err)
 	}
 
-	assert.Equal(t, resp.Message, "User created successfully")
+	assert.NotNil(t, resp.Id)
 }
 
 func TestGetUser(t *testing.T) {
@@ -67,18 +66,27 @@ func TestGetUser(t *testing.T) {
 	defer conn.Close()
 	client := proto.NewUserServiceClient(conn)
 
-	req := &proto.GetUserRequest{
-		Id: "1",
+	req := &proto.CreateUserRequest{
+		Name:  "Test User",
+		Email: "testuser@example.com",
 	}
 
-	resp, err := client.GetUser(ctx, req)
+	createResp, err := client.CreateUser(ctx, req)
+	if err != nil {
+		t.Fatalf("CreateUser failed: %v", err)
+	}
+
+	getReq := &proto.GetUserRequest{
+		Id: createResp.Id,
+	}
+
+	resp, err := client.GetUser(ctx, getReq)
 	if err != nil {
 		t.Fatalf("GetUser failed: %v", err)
 	}
 
-	assert.Equal(t, req.Id, resp.Id)
-	assert.Equal(t, "Test User", resp.Name)
-	assert.Equal(t, "testuser@example.com", resp.Email)
+	assert.Equal(t, "Test User", resp.User.Name)
+	assert.Equal(t, "testuser@example.com", resp.User.Email)
 }
 
 func TestDeleteUser(t *testing.T) {
@@ -99,5 +107,5 @@ func TestDeleteUser(t *testing.T) {
 		t.Fatalf("DeleteUser failed: %v", err)
 	}
 
-	assert.Equal(t, req.Id, resp.Id)
+	assert.Equal(t, resp.Message, "User deleted successfully")
 }

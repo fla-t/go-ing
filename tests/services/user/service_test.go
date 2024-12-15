@@ -3,7 +3,6 @@ package user_test
 import (
 	"testing"
 
-	"github.com/fla-t/go-ing/internal/domain/user"
 	service "github.com/fla-t/go-ing/internal/services/user"
 	"github.com/fla-t/go-ing/internal/uow/inmemory"
 	"github.com/stretchr/testify/assert"
@@ -13,25 +12,24 @@ func TestCreateUser(t *testing.T) {
 	uow := inmemory.NewFakeUnitOfWork()
 	service := service.NewService(uow)
 
-	u := &user.User{ID: "1", Name: "John Doe", Email: "john@example.com"}
-	err := service.CreateUser(u)
+	id, err := service.CreateUser("John Doe", "john@example.com")
 	assert.Nil(t, err)
 
-	savedUser, err := service.GetUserByID("1")
+	savedUser, err := service.GetUserByID(id)
 	assert.Nil(t, err)
-	assert.Equal(t, u, savedUser)
+	assert.Equal(t, savedUser.ID, id)
 }
 
 func TestDeleteUser(t *testing.T) {
 	uow := inmemory.NewFakeUnitOfWork()
 	service := service.NewService(uow)
 
-	u := &user.User{ID: "1", Name: "John Doe", Email: "john@example.com"}
-	service.CreateUser(u)
-
-	err := service.DeleteUser("1")
+	id, err := service.CreateUser("John Doe", "john@example.com")
 	assert.Nil(t, err)
 
-	_, err = service.GetUserByID("1")
+	err = service.DeleteUser(id)
+	assert.Nil(t, err)
+
+	_, err = service.GetUserByID(id)
 	assert.NotNil(t, err)
 }

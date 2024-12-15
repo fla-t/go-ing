@@ -18,23 +18,28 @@ func NewService(uow uow.UnitOfWorkInterface) *Service {
 }
 
 // CreateUser creates a new user
-func (s *Service) CreateUser(name string, email string) error {
+func (s *Service) CreateUser(name string, email string) (string, error) {
 	if name == "" || email == "" {
-		return errors.New("invalid user data")
+		return "", errors.New("invalid user data")
 	}
 
 	u := user.NewUser(name, email)
 
 	if err := s.uow.Begin(); err != nil {
-		return err
+		return "", err
 	}
 
 	if err := s.uow.UserRepository().Save(u); err != nil {
 		s.uow.Rollback()
-		return err
+		return "", err
 	}
 
-	return s.uow.Commit()
+	if err := s.uow.Commit(); err != nil {
+		s.uow.Rollback()
+		return "", err
+	}
+
+	return u.ID, nil
 }
 
 // GetUserByID returns a user by its id

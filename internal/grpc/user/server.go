@@ -36,11 +36,12 @@ func (s *Service) GetUser(ctx context.Context, req *proto.GetUserRequest) (*prot
 
 // CreateUser creates a new user
 func (s *Service) CreateUser(ctx context.Context, req *proto.CreateUserRequest) (*proto.CreateUserResponse, error) {
-	if err := s.service.CreateUser(req.GetName(), req.GetEmail()); err != nil {
+	userID, err := s.service.CreateUser(req.GetName(), req.GetEmail())
+	if err != nil {
 		return nil, err
 	}
 
-	return &proto.CreateUserResponse{Message: "User created successfully"}, nil
+	return &proto.CreateUserResponse{Id: userID}, nil
 }
 
 // DeleteUser deletes a user by its id
